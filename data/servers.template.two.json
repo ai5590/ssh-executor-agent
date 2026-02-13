@@ -4,7 +4,7 @@
     "user": "root",
     "port": 22,
     "authType": "key",
-    "keyPath": "/keys/core01_ed25519"
+    "keyPath": "/data/keys/agent-ssh-key"
   },
   "vps01": {
     "host": "10.10.10.2",

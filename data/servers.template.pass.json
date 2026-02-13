@@ -1,0 +1,9 @@
+{
+  "server01": {
+    "host": "10.10.10.1",
+    "user": "ubuntu",
+    "port": 22,
+    "authType": "password",
+    "password": "CHANGE_ME"
+  }
+}

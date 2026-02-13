@@ -1,0 +1,82 @@
+We already have a working Java 17 + Gradle + Spring Boot project "ssh-executor-agent".
+Do NOT rewrite the project from scratch. Make minimal changes only.
+
+TASK: Move all runtime data into ./data and add templates.
+
+1) Add folders and placeholder:
+- Create folder: data/
+- Create folder: data/keys/
+- Add file: data/keys/.gitkeep (empty) so the folder is tracked.
+- Add file: data/README.md explaining:
+  - put servers.json here
+  - put SSH keys into data/keys/
+  - do NOT commit real keys/passwords
+
+2) Add config templates (commit them):
+Create these files:
+- data/servers.template.two.json   (two servers: one key, one password)
+- data/servers.template.key.json   (one server using key)
+- data/servers.template.pass.json  (one server using password)
+
+Use this JSON schema per server (must match the current code; if current code differs, refactor only the config loader/model minimally to support this):
+{
+  "host": "192.168.1.250",
+  "user": "root",
+  "port": 22,
+  "authType": "key",
+  "keyPath": "/data/keys/agent-ssh-key"
+}
+
+or password:
+{
+  "host": "10.10.10.2",
+  "user": "ubuntu",
+  "port": 22,
+  "authType": "password",
+  "password": "CHANGE_ME"
+}
+
+For data/servers.template.two.json include:
+- core01: key auth, keyPath "/data/keys/agent-ssh-key"
+- vps01: password auth, password "CHANGE_ME"
+
+3) Config path and keys path:
+- Add env var SERVERS_CONFIG_PATH
+- Default to "./data/servers.json" if env is not set.
+- Log the actual config path used at startup.
+- If config file is missing -> fail fast with a clear error message.
+- Do not hardcode /app/servers.json.
+
+4) .gitignore:
+Ignore runtime secrets:
+- data/servers.json
+- data/keys/*
+But keep data/keys/.gitkeep tracked (do not ignore it).
+
+5) Docker + compose example:
+- Ensure Docker can mount ./data to /data inside container.
+- Set env SERVERS_CONFIG_PATH=/data/servers.json in docker-compose.example.yml.
+- Publish external port 25005 to container 8080:
+  ports:
+    - "25005:8080"
+- Mount:
+  ./data:/data:ro
+(keys inside /data/keys must be readable)
+
+6) Update docs (minimal):
+Update README.md to include:
+- how to create runtime config:
+  cp data/servers.template.two.json data/servers.json
+- where to put keys:
+  data/keys/agent-ssh-key (chmod 600)
+- how to run docker:
+  docker build -t ssh-executor-agent:latest .
+  docker run -d --name ssh-executor-agent -p 25005:8080 -v $(pwd)/data:/data:ro -e SERVERS_CONFIG_PATH=/data/servers.json ssh-executor-agent:latest
+- curl examples:
+  GET /servers
+  POST /exec
+
+After changes:
+- Show the updated file tree
+- Show changed files (especially config loader path logic, .gitignore, docker-compose.example.yml, README.md)
+- Ensure the project still builds and starts.

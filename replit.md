@@ -4,6 +4,7 @@
 HTTP service for executing commands on remote servers via SSH. Built with Java 17, Spring Boot, and Apache MINA SSHD.
 
 ## Recent Changes
+- 2026-02-13: Moved runtime data to ./data directory, added config templates, env var SERVERS_CONFIG_PATH, fail-fast on missing config
 - 2026-02-13: Initial project creation with full structure
 
 ## Project Architecture
@@ -37,11 +38,23 @@ src/main/java/com/sshexecutor/
     └── SshExecutionException.java     # 500 for SSH failures
 ```
 
+### Data Directory
+```
+data/
+├── servers.json               # Runtime config (gitignored)
+├── servers.template.two.json  # Template: two servers (key + password)
+├── servers.template.key.json  # Template: one server (key auth)
+├── servers.template.pass.json # Template: one server (password auth)
+├── keys/                      # SSH keys directory (gitignored)
+│   └── .gitkeep
+└── README.md
+```
+
 ### Key Files
-- `servers.json` — Server connection configuration (root of project)
+- `data/servers.json` — Runtime server config (created from template, gitignored)
 - `build.gradle` — Gradle build with Spring Boot plugin
 - `Dockerfile` — Multi-stage build for production
-- `docker-compose.example.yml` — Docker Compose example
+- `docker-compose.example.yml` — Docker Compose example (port 25005:8080, /data mount)
 
 ### API Endpoints
 - `POST /exec` — Execute SSH command on a server

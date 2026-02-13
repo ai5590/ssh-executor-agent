@@ -13,3 +13,7 @@ out/
 bin/
 *.log
 hs_err_pid*
+
+data/servers.json
+data/keys/*
+!data/keys/.gitkeep

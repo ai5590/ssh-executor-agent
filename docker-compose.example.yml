@@ -4,10 +4,9 @@ services:
   ssh-executor-agent:
     build: .
     ports:
-      - "8080:8080"
+      - "25005:8080"
     volumes:
-      - ./servers.json:/app/servers.json:ro
-      - ./keys:/keys:ro
+      - ./data:/data:ro
     environment:
-      - SERVERS_CONFIG_PATH=/app/servers.json
+      - SERVERS_CONFIG_PATH=/data/servers.json
     restart: unless-stopped

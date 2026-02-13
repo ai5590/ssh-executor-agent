@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -17,25 +16,31 @@ import java.util.Map;
 public class ServerConfigLoader {
 
     private static final Logger log = LoggerFactory.getLogger(ServerConfigLoader.class);
+    private static final String DEFAULT_CONFIG_PATH = "./data/servers.json";
 
-    @Value("${servers.config.path:servers.json}")
-    private String configPath;
-
+    private final String configPath;
     private Map<String, ServerInfo> servers = Collections.emptyMap();
+
+    public ServerConfigLoader() {
+        String envPath = System.getenv("SERVERS_CONFIG_PATH");
+        this.configPath = (envPath != null && !envPath.isBlank()) ? envPath : DEFAULT_CONFIG_PATH;
+    }
 
     @PostConstruct
     public void load() {
+        log.info("Using server config path: {}", configPath);
+        File file = new File(configPath);
+        if (!file.exists()) {
+            throw new IllegalStateException(
+                    "Server config file not found: " + file.getAbsolutePath()
+                    + ". Copy a template: cp data/servers.template.two.json data/servers.json");
+        }
         try {
             ObjectMapper mapper = new ObjectMapper();
-            File file = new File(configPath);
-            if (!file.exists()) {
-                log.warn("Server config file not found: {}", configPath);
-                return;
-            }
             servers = mapper.readValue(file, new TypeReference<Map<String, ServerInfo>>() {});
             log.info("Loaded {} server(s) from {}", servers.size(), configPath);
         } catch (IOException e) {
-            log.error("Failed to load server config from {}: {}", configPath, e.getMessage());
+            throw new IllegalStateException("Failed to load server config from " + configPath + ": " + e.getMessage(), e);
         }
     }
 
