@@ -1,0 +1,15 @@
+build/
+.gradle/
+*.class
+*.jar
+*.war
+!gradle/wrapper/gradle-wrapper.jar
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+out/
+bin/
+*.log
+hs_err_pid*

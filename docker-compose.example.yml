@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  ssh-executor-agent:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./servers.json:/app/servers.json:ro
+      - ./keys:/keys:ro
+    environment:
+      - SERVERS_CONFIG_PATH=/app/servers.json
+    restart: unless-stopped

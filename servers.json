@@ -1,0 +1,16 @@
+{
+  "core01": {
+    "host": "192.168.1.250",
+    "user": "root",
+    "port": 22,
+    "authType": "key",
+    "keyPath": "/keys/core01_ed25519"
+  },
+  "vps01": {
+    "host": "10.10.10.2",
+    "user": "ubuntu",
+    "port": 22,
+    "authType": "password",
+    "password": "CHANGE_ME"
+  }
+}
