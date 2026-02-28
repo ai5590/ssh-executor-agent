@@ -2,6 +2,7 @@ package com.sshexecutor.controller;
 
 import com.sshexecutor.config.ServerConfigLoader;
 import com.sshexecutor.config.ServerInfo;
+import com.sshexecutor.dto.DirectExecRequest;
 import com.sshexecutor.dto.ExecRequest;
 import com.sshexecutor.dto.ExecResponse;
 import com.sshexecutor.service.SshExecutionService;
@@ -26,8 +27,35 @@ public class ExecController {
         this.serverConfigLoader = serverConfigLoader;
     }
 
+    /**
+     * Новый основной endpoint: выполняет команду по host/port/user/command,
+     * авторизация только key, ключ берётся из настроек (по умолчанию ./keys/agent-ssh-key).
+     */
     @PostMapping("/exec")
-    public ResponseEntity<ExecResponse> exec(@RequestBody ExecRequest request) {
+    public ResponseEntity<ExecResponse> execDirect(@RequestBody DirectExecRequest request) {
+        if (request.getHost() == null || request.getHost().isBlank()) {
+            throw new IllegalArgumentException("host is required");
+        }
+        if (request.getUser() == null || request.getUser().isBlank()) {
+            throw new IllegalArgumentException("user is required");
+        }
+        if (request.getCommand() == null || request.getCommand().isBlank()) {
+            throw new IllegalArgumentException("command is required");
+        }
+
+        int port = (request.getPort() == null || request.getPort() <= 0) ? 22 : request.getPort();
+
+        log.info("Executing direct command on {}@{}:{}", request.getUser(), request.getHost(), port);
+        String result = sshExecutionService.executeDirect(request.getHost(), port, request.getUser(), request.getCommand());
+        return ResponseEntity.ok(new ExecResponse(result));
+    }
+
+    /**
+     * Старый режим: выполнить команду по имени сервера из servers.json.
+     * Было POST /exec, стало POST /exec_on_server.
+     */
+    @PostMapping("/exec_on_server")
+    public ResponseEntity<ExecResponse> execOnServer(@RequestBody ExecRequest request) {
         if (request.getServer() == null || request.getServer().isBlank()) {
             throw new IllegalArgumentException("Server name is required");
         }
